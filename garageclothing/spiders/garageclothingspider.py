@@ -67,7 +67,7 @@ class GarageclothingSpider(scrapy.Spider):
                 print ">>>>>>>>>> Product URL"
                 print self.base_url + product
                 yield Request(url=self.base_url + product, callback=self.parse_product)
-                
+
 
         if next_url:
             yield Request(url=self.base_url+next_url, callback=self.parse_category)
@@ -174,7 +174,6 @@ class GarageclothingSpider(scrapy.Spider):
         except Exception, e:
             print "***exception at"
             print item['id']
-            inspect_response(response)
-            raw_input("Continue?")
+            
 
 
