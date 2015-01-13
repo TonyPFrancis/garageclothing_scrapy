@@ -27,3 +27,7 @@ class GarageclothingItem(scrapy.Item):
     brand_slug = scrapy.Field()
     crawl_date = scrapy.Field()
     availability = scrapy.Field()
+    main_category = scrapy.Field()
+    category_slug = scrapy.Field()
+    product_category = scrapy.Field()
+    subcategory_slug = scrapy.Field()
