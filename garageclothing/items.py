@@ -11,4 +11,4 @@ import scrapy
 class GarageclothingItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    product_description = scrapy.Field()
