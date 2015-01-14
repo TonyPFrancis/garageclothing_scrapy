@@ -5,7 +5,7 @@ from scrapy.shell import inspect_response
 from garageclothing.items import GarageclothingItem
 from slugify import slugify
 from datetime import datetime
-import time
+
 
 class GarageclothingSpider(scrapy.Spider):
     name = 'garageclothingspider'
@@ -13,11 +13,14 @@ class GarageclothingSpider(scrapy.Spider):
                        'dynamiteclothing.com']
     start_urls = ['http://www.garageclothing.com']
     base_url = "http://www.garageclothing.com/"
+    # dict to find the country wrt site info
     country_dict = {
         'CA': 'CANADA',
         'US': 'UNITED STATES',
     }
     total_product = 0
+    skipped_product = 0
+    current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
     def parse(self, response):
         redirect_url = response.xpath(
@@ -83,7 +86,9 @@ class GarageclothingSpider(scrapy.Spider):
         # fetcing id
         item['id'] = response.url
 
+
         try:
+        
             # fetching product_description
             product_description = response.xpath(
                 "//div[@class=\"productDescriptionContent\"]//text()").extract()
@@ -111,17 +116,17 @@ class GarageclothingSpider(scrapy.Spider):
             elif len(price_list) == 1:
                 price = response.xpath("//h2[@class=\"prodPricePDP\"]/text()").extract()[0]
             price = price.replace('$','')
-            item['price'] = price
+            item['price'] = float(price)
 
             # fetching size
             item['size'] = response.xpath("//div[@id=\"productSizes\"]/span/text()").extract()
 
             # fetching product_name
             product_name = response.xpath("//h1[@class=\"prodName prodNamePDP\"]/text()").extract()[0]
-            item['product_name'] = product_name
+            item['product_name'] = product_name.strip()
 
             # fetching product_title_slug
-            item['product_title_slug'] = slugify(product_name)
+            item['product_title_slug'] = slugify(product_name.strip())
 
             # fetching product_img
             product_img = response.xpath("//div[@id=\"prodImageChangeContainer\"]//div[@id=\"additionalViewsPDP\"]//img/@src").extract()
@@ -142,39 +147,49 @@ class GarageclothingSpider(scrapy.Spider):
             item['brand_slug'] = slugify('GARAGE')
 
             # fetching crawl_date
-            item['crawl_date'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            item['crawl_date'] = self.current_time
 
             # fetching availability
             availability = response.xpath("//div[@id=\"stockAvailabilityMsg\"]/text()").extract()[0].strip()
             if not availability:
                 item['availability'] = False
             else:
-                item['availability'] = availability
+                item['availability'] = True
 
             # fetching category_list
             category_list = response.xpath("//ul[@class=\"breadcrumbs\"]/li//text()").extract()
 
             # fetching main_category
-            item['main_category'] = category_list[1]
+            main_category = category_list[1]
+
+            if main_category in ["what's new"]:
+                # skipping if item is in "what's new" category
+                print "*** SKIP"
+                self.skipped_product += 1
+                return
+            else:
+                # assign value if item is not in "what's new" category
+                item['main_category'] = main_category
 
             # fetching category_slug
-            item['category_slug'] = slugify(category_list[1])
+            item['category_slug'] = slugify(main_category)
 
             #fetching product_category
-            item['product_category'] = category_list[2:-1]
+            item['product_category'] = category_list[2]
 
             # fetching subcategory_slug
-            item['subcategory_slug'] = [slugify(x) for x in category_list[2:-1]]
+            item['subcategory_slug'] = slugify(category_list[2])
 
 
 
             self.total_product += 1
             print "TOTAL PRODUCT = %s" % self.total_product
+            print "SKIPPED PRODUCT = %s" % self.skipped_product
             yield item
 
         except Exception, e:
             print "***exception at"
             print item['id']
-            
+
 
 

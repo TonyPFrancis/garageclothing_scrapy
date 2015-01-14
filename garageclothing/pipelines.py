@@ -13,5 +13,5 @@ class GarageclothingPipeline(object):
         self.db = MongoClient('127.0.0.1').garageclothingdata
 
     def process_item(self, item, spider):
-        self.db.product_info.insert(dict(item))
+        self.db.productinfo.insert(dict(item))
         return item
