@@ -20,6 +20,7 @@ class GarageclothingSpider(scrapy.Spider):
     }
     total_product = 0
     skipped_product = 0
+    # current runtime of spider
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
     def parse(self, response):
@@ -29,12 +30,22 @@ class GarageclothingSpider(scrapy.Spider):
         yield Request(url=redirect_url, callback=self.parseredirect)
 
     def parseredirect(self, response):
+        '''
+        fuction to redirect to "http://www.garageclothing.com/ca/"
+        :param response:
+        :return:
+        '''
         redirect_url = self.base_url + "ca/"
         print ">>>>>>>>>>\nRedirecting to URL\n" + redirect_url
         yield Request(url=redirect_url, callback=self.parsemainpage)
 
 
     def parsemainpage(self, response):
+        '''
+        function to fetch categoru urls
+        :param response:
+        :return:
+        '''
         print ">>>>>>>>>> Current URL"
         print response.url
 
@@ -55,6 +66,11 @@ class GarageclothingSpider(scrapy.Spider):
             return
 
     def parse_category(self, response):
+        '''
+        function to parse category and get the product items
+        :param response:
+        :return:
+        '''
         print ">>>>>>>>>> Category URL"
         print "URL : " + response.url
         next_url = response.xpath("//figure[@class=\"prodlistingFrag productListingElement \"]/@nextpage").extract()
@@ -77,6 +93,11 @@ class GarageclothingSpider(scrapy.Spider):
 
 
     def parse_product(self, response):
+        '''
+        function to parse product
+        :param response:
+        :return:
+        '''
         print ">>>>>>>>>>"
         print "URL : " + response.url
 
@@ -88,7 +109,7 @@ class GarageclothingSpider(scrapy.Spider):
 
 
         try:
-        
+
             # fetching product_description
             product_description = response.xpath(
                 "//div[@class=\"productDescriptionContent\"]//text()").extract()
@@ -185,6 +206,7 @@ class GarageclothingSpider(scrapy.Spider):
             self.total_product += 1
             print "TOTAL PRODUCT = %s" % self.total_product
             print "SKIPPED PRODUCT = %s" % self.skipped_product
+            # yielding item to pipeline
             yield item
 
         except Exception, e:
