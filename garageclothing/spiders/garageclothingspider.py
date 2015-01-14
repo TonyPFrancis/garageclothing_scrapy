@@ -167,9 +167,10 @@ class GarageclothingSpider(scrapy.Spider):
             item['subcategory_slug'] = [slugify(x) for x in category_list[2:-1]]
 
 
-            print item
+
             self.total_product += 1
             print "TOTAL PRODUCT = %s" % self.total_product
+            yield item
 
         except Exception, e:
             print "***exception at"
